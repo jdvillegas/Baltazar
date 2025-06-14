@@ -18,6 +18,7 @@ class CasesController extends Controller
     {
         try {
             $cases = CaseModel::with('user')
+                ->where('user_id', auth()->id())
                 ->get();
             return view('cases.index', compact('cases'));
         } catch (\Exception $e) {
@@ -60,7 +61,10 @@ class CasesController extends Controller
 
     public function show(CaseModel $case)
     {
-        $this->checkPermissions('cases.show'); // Check permissions using the custom trait
+        // Verificar que el caso pertenece al usuario actual
+        if ($case->user_id !== auth()->id()) {
+            abort(403, 'No tienes permisos para ver este caso');
+        }
         return view('cases.show', compact('case'));
     }
 

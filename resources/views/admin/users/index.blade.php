@@ -37,6 +37,8 @@
                                     <th>Nombre</th>
                                     <th>Email</th>
                                     <th>Rol</th>
+                                    <th>Membresía</th>
+                                    <th>Casos Activos</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -51,6 +53,16 @@
                                             @foreach($user->roles as $role)
                                                 <span class="badge bg-primary">{{ $role->name }}</span>
                                             @endforeach
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ $user->membership_type === 'premium' ? 'success' : 'info' }}">
+                                                {{ ucfirst($user->membership_type) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">
+                                                {{ $user->cases->count() }} / {{ $user->max_open_cases }}
+                                            </span>
                                         </td>
                                         <td>
                                             @if($user->status === 'inactive')

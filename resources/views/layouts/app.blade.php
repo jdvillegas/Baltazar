@@ -69,18 +69,39 @@
                 <h3 class="text-center mb-4">Baltazar</h3>
             </div>
             <nav class="nav flex-column">
-                 <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                <!-- Dashboard -->
+                <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
                     <i class="material-icons">dashboard</i>
                     Dashboard
                 </a>
+
+                <!-- Casos -->
                 <a class="nav-link {{ request()->routeIs('cases.*') ? 'active' : '' }}" href="{{ route('cases.index') }}">
                     <i class="material-icons">folder</i>
                     Casos
                 </a>
+
+                <!-- Configuración -->
                 <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
                     <i class="material-icons">settings</i>
                     Configuración
                 </a>
+
+                <!-- Opciones de Administración (solo para administradores) -->
+                @if(auth()->check() && auth()->user()->hasRole('admin'))
+                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                        <i class="material-icons">people</i>
+                        Gestión de Usuarios
+                    </a>
+                    <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}">
+                        <i class="material-icons">notifications</i>
+                        Notificaciones
+                    </a>
+                    <a class="nav-link {{ request()->routeIs('admin.support.*') ? 'active' : '' }}" href="{{ route('admin.support.index') }}">
+                        <i class="material-icons">support_agent</i>
+                        Soporte
+                    </a>
+                @endif
             </nav>
         </div>
 

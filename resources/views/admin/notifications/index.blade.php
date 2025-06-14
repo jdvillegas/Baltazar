@@ -40,17 +40,49 @@
                                     <tr>
                                         <td>{{ $notification->id }}</td>
                                         <td>{{ $notification->title }}</td>
-                                        <td>{{ $notification->user->name }}</td>
                                         <td>
-                                            @if($notification->read_at)
-                                                <span class="badge bg-success">Leída</span>
-                                            @else
-                                                <span class="badge bg-warning">No leída</span>
-                                            @endif
+                                            <div>
+                                                @foreach($notification->users as $user)
+                                                    <span class="badge bg-primary me-1">
+                                                        {{ $user->name }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                @foreach($notification->users as $user)
+                                                    <span class="badge {{ $notification->isReadBy($user) ? 'bg-success' : 'bg-warning' }} me-1">
+                                                        {{ $user->name }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
                                         </td>
                                         <td>{{ $notification->created_at->format('Y-m-d H:i') }}</td>
                                         <td>
-                                            {{ $notification->read_at ? $notification->read_at->format('Y-m-d H:i') : '-' }}
+                                            <div>
+                                                @foreach($notification->users as $user)
+                                                    <span class="badge bg-info me-1">
+                                                        {{ $notification->isReadBy($user) ? $notification->users->find($user->id)->pivot->read_at->format('Y-m-d H:i') : 'No leída' }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                @foreach($notification->users as $user)
+                                                    @if(!$notification->isReadBy($user))
+                                                        <form action="{{ route('admin.notifications.send') }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <input type="hidden" name="notification_id" value="{{ $notification->id }}">
+                                                            <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                                            <button type="submit" class="btn btn-sm btn-success">
+                                                                <i class="material-icons">done</i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                @endforeach
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
