@@ -15,7 +15,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', ['App\Http\Controllers\DashboardController', 'index'])->name('dashboard');
 
     // Rutas de administración
-    Route::prefix('admin')->middleware(['auth', 'permission:users.view'])->group(function () {
+    Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::resource('users', \App\Http\Controllers\Admin\UsersController::class);
         Route::delete('users/{user}/inactivate', [\App\Http\Controllers\Admin\UsersController::class, 'inactivate'])->name('admin.users.inactivate');
         Route::resource('notifications', \App\Http\Controllers\Admin\NotificationsController::class);
@@ -40,8 +40,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', ['App\Http\Controllers\SettingsController', 'index'])->name('settings.index');
         Route::post('/', ['App\Http\Controllers\SettingsController', 'update'])->name('settings.update');
     });
-
-
 });
 
 require __DIR__.'/auth.php';

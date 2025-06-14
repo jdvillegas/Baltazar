@@ -119,6 +119,10 @@ return [
     */
 
     'maintenance' => [
+        'providers' => [
+        // Laravel Framework Service Providers...
+        Spatie\Permission\PermissionServiceProvider::class,
+        ],
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],

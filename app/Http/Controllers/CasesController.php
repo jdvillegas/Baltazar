@@ -11,10 +11,7 @@ class CasesController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:cases.view')->only('index');
-        $this->middleware('permission:cases.create')->only('create', 'store');
-        $this->middleware('permission:cases.edit')->only('edit', 'update');
-        $this->middleware('permission:cases.delete')->only('destroy');
+        $this->middleware('auth');
     }
 
     public function index()
@@ -63,6 +60,7 @@ class CasesController extends Controller
 
     public function show(CaseModel $case)
     {
+        $this->checkPermissions('cases.show'); // Check permissions using the custom trait
         return view('cases.show', compact('case'));
     }
 

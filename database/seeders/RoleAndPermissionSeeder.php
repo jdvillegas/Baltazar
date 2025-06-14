@@ -7,6 +7,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleAndPermissionSeeder extends Seeder
 {
@@ -15,9 +16,12 @@ class RoleAndPermissionSeeder extends Seeder
      */
     public function run(): void
     {
+        // Inicializar el registro de permisos
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
         // Crear roles
-        $adminRole = Spatie\Permission\Models\Role::create(['name' => 'admin']);
-        $clientRole = Spatie\Permission\Models\Role::create(['name' => 'client']);
+        $adminRole = Role::create(['name' => 'admin', 'guard_name' => 'web']);
+        $clientRole = Role::create(['name' => 'client', 'guard_name' => 'web']);
 
         // Crear permisos
         $permissions = [
@@ -49,17 +53,17 @@ class RoleAndPermissionSeeder extends Seeder
 
         // Crear y asignar permisos
         foreach ($permissions as $permission) {
-            $perm = Spatie\Permission\Models\Permission::create(['name' => $permission]);
+            $perm = \App\Models\Permission::create(['name' => $permission]);
             $adminRole->givePermissionTo($perm);
         }
 
         // Asignar permisos básicos a clientes
-        $clientRole->givePermissionTo([
+        $clientRole->givePermissionTo(\App\Models\Permission::whereIn('name', [
             'cases.view',
             'cases.create',
             'cases.edit',
             'cases.delete'
-        ]);
+        ])->where('guard_name', 'web')->get());
 
         // Crear superadmin
         $user = \App\Models\User::firstOrCreate([
@@ -71,6 +75,6 @@ class RoleAndPermissionSeeder extends Seeder
             'max_open_cases' => 100
         ]);
 
-        $user->assignRole('admin');
+        $user->assignRole(\App\Models\Role::where('name', 'admin')->first());
     }
 }
