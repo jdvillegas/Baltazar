@@ -11,7 +11,10 @@ class CasesController extends Controller
 {
     public function __construct()
     {
-        // Middleware de autenticación se maneja a nivel de rutas
+        $this->middleware('permission:cases.view')->only('index');
+        $this->middleware('permission:cases.create')->only('create', 'store');
+        $this->middleware('permission:cases.edit')->only('edit', 'update');
+        $this->middleware('permission:cases.delete')->only('destroy');
     }
 
     public function index()

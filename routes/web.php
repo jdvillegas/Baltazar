@@ -14,6 +14,16 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', ['App\Http\Controllers\DashboardController', 'index'])->name('dashboard');
 
+    // Rutas de administración
+    Route::prefix('admin')->middleware(['auth', 'permission:users.view'])->group(function () {
+        Route::resource('users', \App\Http\Controllers\Admin\UsersController::class);
+        Route::delete('users/{user}/inactivate', [\App\Http\Controllers\Admin\UsersController::class, 'inactivate'])->name('admin.users.inactivate');
+        Route::resource('notifications', \App\Http\Controllers\Admin\NotificationsController::class);
+        Route::post('notifications/{notification}/send', [\App\Http\Controllers\Admin\NotificationsController::class, 'send'])->name('admin.notifications.send');
+        Route::resource('support', \App\Http\Controllers\Admin\SupportController::class);
+        Route::post('support/{ticket}/resolve', [\App\Http\Controllers\Admin\SupportController::class, 'resolve'])->name('admin.support.resolve');
+    });
+
     // Casos
     Route::prefix('cases')->group(function () {
         Route::get('/', ['App\Http\Controllers\CasesController', 'index'])->name('cases.index');
