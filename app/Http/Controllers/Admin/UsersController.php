@@ -11,6 +11,11 @@ class UsersController extends Controller
     public function index()
     {
         try {
+            // Verificar si el usuario actual es administrador
+            if (!auth()->user()->hasRole('admin')) {
+                throw new \Exception('No tienes permisos para acceder a esta sección');
+            }
+
             $users = User::with(['roles', 'cases' => function($query) {
                 $query->where('status', 'pendiente')
                      ->orWhere('status', 'en_proceso')

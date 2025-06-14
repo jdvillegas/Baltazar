@@ -21,13 +21,19 @@ class UserSeeder extends Seeder
 
         // Verificar que el rol existe
         $role = \App\Models\Role::where('name', 'admin')->first();
-        if ($role) {
-            // Asignar el rol de administrador
-            $admin->assignRole($role);
-        } else {
-            // Si el rol no existe, crearlo y asignarlo
+        if (!$role) {
+            // Si el rol no existe, crearlo
             $role = \App\Models\Role::create(['name' => 'admin']);
-            $admin->assignRole($role);
+        }
+
+        // Asignar el rol de administrador
+        $admin->assignRole($role);
+
+        // Verificar si el rol se asignó correctamente
+        if ($admin->hasRole('admin')) {
+            echo "Usuario administrador creado y asignado correctamente\n";
+        } else {
+            echo "Error: No se pudo asignar el rol de administrador\n";
         }
     }
 }

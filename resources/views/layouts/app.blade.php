@@ -89,15 +89,15 @@
 
                 <!-- Opciones de Administración (solo para administradores) -->
                 @if(auth()->check() && auth()->user()->hasRole('admin'))
-                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                    <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
                         <i class="material-icons">people</i>
                         Gestión de Usuarios
                     </a>
-                    <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}">
+                    <a class="nav-link {{ request()->routeIs('notifications.*') ? 'active' : '' }}" href="{{ route('notifications.index') }}">
                         <i class="material-icons">notifications</i>
                         Notificaciones
                     </a>
-                    <a class="nav-link {{ request()->routeIs('admin.support.*') ? 'active' : '' }}" href="{{ route('admin.support.index') }}">
+                    <a class="nav-link {{ request()->routeIs('support.*') ? 'active' : '' }}" href="{{ route('support.index') }}">
                         <i class="material-icons">support_agent</i>
                         Soporte
                     </a>

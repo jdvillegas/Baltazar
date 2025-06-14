@@ -17,13 +17,20 @@ class HasRole
                 return redirect()->route('login');
             }
 
+            // Verificar si el usuario tiene el rol
             if (!auth()->user()->hasRole($role)) {
-                throw UnauthorizedException::forRoles([$role]);
+                // Registrar el error en el log
+                \Log::error('Usuario intentó acceder sin permisos: ' . auth()->user()->email . ' intentó acceder a ' . $request->path() . ' pero no tiene el rol ' . $role);
+                
+                // Redirigir a la página de inicio con mensaje de error
+                return redirect()->route('dashboard')->with('error', 'No tienes permisos para acceder a esta sección');
             }
 
             return $next($request);
-        } catch (UnauthorizedException $e) {
-            return response()->view('errors.403', [], 403);
+        } catch (\Exception $e) {
+            // Registrar cualquier otro error
+            \Log::error('Error en middleware HasRole: ' . $e->getMessage());
+            return redirect()->route('dashboard')->with('error', 'Error al verificar permisos');
         }
     }
 }
