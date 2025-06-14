@@ -139,6 +139,53 @@
                 <p>¡Bienvenido a tu panel de control!</p>
             </div>
 
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3>Membresía</h3>
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Días Restantes en Trial:</span>
+                                        <span class="badge bg-{{ $daysColor }}">
+                                            {{ $daysRemaining }} días
+                                        </span>
+                                    </div>
+                                    <div class="progress mt-2">
+                                        <div class="progress-bar bg-{{ $daysColor }}" 
+                                             role="progressbar" 
+                                             style="width: {{ ($daysRemaining / 90) * 100 }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3>Casos Abiertos</h3>
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Casos Activos:</span>
+                                        <span class="badge bg-primary">
+                                            {{ $openCases }}/{{ $maxOpenCases }}
+                                        </span>
+                                    </div>
+                                    <div class="progress mt-2">
+                                        <div class="progress-bar bg-primary" 
+                                             role="progressbar" 
+                                             style="width: {{ ($openCases / $maxOpenCases) * 100 }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-4">
                     <div class="stats-card">

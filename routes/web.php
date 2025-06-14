@@ -12,9 +12,7 @@ Route::post('/register', [RegisteredUserController::class, 'store']);
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/', ['App\Http\Controllers\DashboardController', 'index'])->name('dashboard');
 
     // Casos
     Route::prefix('cases')->group(function () {
