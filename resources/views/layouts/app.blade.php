@@ -69,21 +69,13 @@
                 <h3 class="text-center mb-4">Baltazar</h3>
             </div>
             <nav class="nav flex-column">
-                <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                 <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
                     <i class="material-icons">dashboard</i>
                     Dashboard
                 </a>
                 <a class="nav-link {{ request()->routeIs('cases.*') ? 'active' : '' }}" href="{{ route('cases.index') }}">
                     <i class="material-icons">folder</i>
                     Casos
-                </a>
-                <a class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" href="{{ route('reports.index') }}">
-                    <i class="material-icons">assessment</i>
-                    Reportes
-                </a>
-                <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
-                    <i class="material-icons">people</i>
-                    Usuarios
                 </a>
                 <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
                     <i class="material-icons">settings</i>
@@ -125,7 +117,7 @@
             </div>
 
             <main>
-                {{ $slot }}
+                @yield('content')
             </main>
         </div>
 
