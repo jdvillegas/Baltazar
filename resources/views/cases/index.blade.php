@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@php
+    use Carbon\Carbon;
+@endphp
+
 @section('title', 'Casos')
 
 @section('content')
@@ -21,6 +25,7 @@
             $user = auth()->user();
             $openCases = \App\Models\CaseModel::where('status', 'pendiente')
                 ->orWhere('status', 'en_proceso')
+                ->orWhere('status', 'anulado')
                 ->count();
         @endphp
         @if($openCases < $user->max_open_cases)
@@ -60,22 +65,36 @@
                                     <td>{{ $case->id }}</td>
                                     <td>{{ $case->title }}</td>
                                     <td>
-                                        <span class="badge bg-{{ $case->status === 'pendiente' ? 'warning' : ($case->status === 'en_proceso' ? 'info' : ($case->status === 'completado' ? 'success' : 'danger')) }}">
+                                        <span class="badge {{ $case->status === 'anulado' ? 'bg-secondary text-dark' : ($case->status === 'pendiente' ? 'bg-warning text-dark' : ($case->status === 'en_proceso' ? 'bg-info text-dark' : ($case->status === 'completado' ? 'bg-success text-dark' : 'bg-danger text-dark'))) }}">
                                             {{ ucfirst($case->status) }}
                                         </span>
                                     </td>
                                     <td>{{ $case->created_at->format('Y-m-d H:i') }}</td>
                                     <td>
-                                        <div class="btn-group">
-                                            <a href="{{ route('cases.edit', $case) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Editar">
-                                                <i class="material-icons">edit</i>
-                                            </a>
-                                            <form action="{{ route('cases.destroy', $case) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar este caso?')" data-bs-toggle="tooltip" title="Eliminar">
-                                                    <i class="material-icons">delete</i>
-                                                </button>
+                                        @if($case->status !== 'anulado')
+                                            <div class="btn-group">
+                                                <a href="{{ route('cases.edit', $case) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Editar">
+                                                    <i class="material-icons">edit</i>
+                                                </a>
+                                                <form action="{{ route('cases.destroy', $case) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de anular este caso?')" data-bs-toggle="tooltip" title="Anular">
+                                                        <i class="material-icons">delete</i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @else
+                                            <div class="text-muted small">
+                                                Acciones no disponibles
+                                            </div>
+                                            <div class="text-muted small">
+                                                Anulado el {{ $case->anulled_at ? \Carbon\Carbon::parse($case->anulled_at)->format('Y-m-d H:i') : 'Fecha no disponible' }}
+                                            </div>
+                                            <div class="text-muted small">
+                                                <i class="material-icons">delete</i> Anulado
+                                            </div>
+                                        @endif
                                             </form>
                                         </div>
                                     </td>

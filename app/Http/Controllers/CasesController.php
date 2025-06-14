@@ -17,7 +17,8 @@ class CasesController extends Controller
     public function index()
     {
         try {
-            $cases = CaseModel::all();
+            $cases = CaseModel::with('user')
+                ->get();
             return view('cases.index', compact('cases'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al cargar los casos: ' . $e->getMessage());
@@ -37,6 +38,9 @@ class CasesController extends Controller
                 'description' => 'required|string',
                 'status' => 'required|string',
             ]);
+
+            $user = auth()->user();
+            $openCases = CaseModel::getActiveCount($user->id);
 
             DB::beginTransaction();
             $case = CaseModel::create([
@@ -88,13 +92,14 @@ class CasesController extends Controller
     {
         try {
             DB::beginTransaction();
-            $case->delete();
+            $case->status = 'anulado';
+            $case->anulled_at = now();
+            $case->save();
             DB::commit();
-
-            return redirect()->route('cases.index')->with('success', 'Caso eliminado exitosamente');
+            return redirect()->route('cases.index')->with('success', 'Caso anulado exitosamente');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Error al eliminar el caso: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al anular el caso: ' . $e->getMessage());
         }
     }
 }

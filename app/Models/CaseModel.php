@@ -11,7 +11,8 @@ class CaseModel extends Model
         'title',
         'description',
         'status',
-        'user_id'
+        'user_id',
+        'anulled_at'
     ];
 
     protected $casts = [
@@ -22,5 +23,12 @@ class CaseModel extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public static function getActiveCount($userId)
+    {
+        return self::where('user_id', $userId)
+            ->whereIn('status', ['pendiente', 'en_proceso', 'anulado'])
+            ->count();
     }
 }

@@ -39,6 +39,7 @@ class DashboardController extends Controller
         // Contar casos abiertos
         $openCases = CaseModel::where('status', 'pendiente')
             ->orWhere('status', 'en_proceso')
+            ->orWhere('status', 'anulado')
             ->count();
 
         return view('dashboard', [
