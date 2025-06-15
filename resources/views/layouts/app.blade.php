@@ -97,7 +97,7 @@
                         <i class="material-icons">notifications</i>
                         Notificaciones
                     </a>
-                    <a class="nav-link {{ request()->routeIs('support.*') ? 'active' : '' }}" href="{{ route('support.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.support.*') ? 'active' : '' }}" href="{{ route('admin.support.index') }}">
                         <i class="material-icons">support_agent</i>
                         Soporte
                     </a>

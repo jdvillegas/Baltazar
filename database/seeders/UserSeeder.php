@@ -9,31 +9,33 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        // Crear el usuario administrador
-        $admin = User::create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('password'),
-            'membership_type' => 'premium',
-            'max_open_cases' => 100,
-            'status' => 'active'
-        ]);
-
-        // Verificar que el rol existe
-        $role = \App\Models\Role::where('name', 'admin')->first();
-        if (!$role) {
-            // Si el rol no existe, crearlo
-            $role = \App\Models\Role::create(['name' => 'admin']);
+        // Create or update admin user
+        $admin = User::firstOrNew(['email' => 'admin@example.com']);
+        
+        if (!$admin->exists) {
+            $admin->fill([
+                'name' => 'Admin',
+                'password' => bcrypt('password'),
+                'membership_type' => 'premium',
+                'max_open_cases' => 100,
+                'status' => 'active',
+                'email_verified_at' => now()
+            ]);
+            $admin->save();
+            
+            echo "Admin user created successfully.\n";
+        } else {
+            echo "Admin user already exists.\n";
         }
 
-        // Asignar el rol de administrador
-        $admin->assignRole($role);
-
-        // Verificar si el rol se asignó correctamente
+        // Assign admin role
+        $admin->syncRoles(['admin']);
+        
+        // Output role assignment status
         if ($admin->hasRole('admin')) {
-            echo "Usuario administrador creado y asignado correctamente\n";
+            echo "Admin role assigned successfully.\n";
         } else {
-            echo "Error: No se pudo asignar el rol de administrador\n";
+            echo "Error: Failed to assign admin role.\n";
         }
     }
 }

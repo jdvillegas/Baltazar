@@ -15,12 +15,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', ['App\Http\Controllers\DashboardController', 'index'])->name('dashboard');
 
     // Rutas de administración (requieren rol de admin)
-    Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
+    Route::prefix('admin')->middleware(['auth', \Spatie\Permission\Middleware\RoleMiddleware::class . ':admin'])->group(function () {
         Route::resource('users', \App\Http\Controllers\Admin\UsersController::class);
         Route::delete('users/{user}/inactivate', [\App\Http\Controllers\Admin\UsersController::class, 'inactivate'])->name('admin.users.inactivate');
         Route::resource('notifications', \App\Http\Controllers\Admin\NotificationsController::class);
         Route::post('notifications/{notification}/send', [\App\Http\Controllers\Admin\NotificationsController::class, 'send'])->name('admin.notifications.send');
-        Route::resource('support', \App\Http\Controllers\Admin\SupportController::class);
+        Route::resource('support', \App\Http\Controllers\Admin\SupportController::class)->names([
+            'index' => 'admin.support.index',
+            'create' => 'admin.support.create',
+            'store' => 'admin.support.store',
+            'show' => 'admin.support.show',
+            'edit' => 'admin.support.edit',
+            'update' => 'admin.support.update',
+            'destroy' => 'admin.support.destroy',
+        ]);
         Route::post('support/{ticket}/resolve', [\App\Http\Controllers\Admin\SupportController::class, 'resolve'])->name('admin.support.resolve');
     });
 
