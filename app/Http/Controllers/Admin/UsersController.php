@@ -50,12 +50,12 @@ class UsersController extends Controller
 
         try {
             $validated = $request->validate([
-                'name' => 'string|max:255',
-                'email' => 'email|unique:users,email,' . $user->id,
-                'membership_type' => 'in:free,premium',
-                'max_open_cases' => 'integer|min:1',
-                'status' => 'in:active,inactive',
-                'roles' => 'array',
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'membership_type' => 'required|in:trial,free,premium',
+                'max_open_cases' => 'required|integer|min:1',
+                'status' => 'required|in:active,inactive',
+                'roles' => 'required|array',
                 'roles.*' => 'string|exists:roles,name'
             ]);
 

@@ -23,7 +23,11 @@ class SupportController extends Controller
      */
     public function create()
     {
-        return view('admin.support.create');
+        $users = User::whereHas('roles', function($query) {
+            $query->whereIn('name', ['admin', 'agent']);
+        })->get();
+        
+        return view('admin.support.create', compact('users'));
     }
 
     /**

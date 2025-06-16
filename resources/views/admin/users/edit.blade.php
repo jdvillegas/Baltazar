@@ -8,7 +8,7 @@
                 <div class="card-header">Editar Usuario</div>
 
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.users.update', $user) }}">
+                    <form method="POST" action="{{ route('users.update', $user) }}">
                         @csrf
                         @method('PUT')
 
@@ -28,6 +28,43 @@
                             <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email', $user->email) }}" required autocomplete="email">
 
                             @error('email')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="membership_type" class="form-label">Tipo de Membresía</label>
+                            <select id="membership_type" class="form-control @error('membership_type') is-invalid @enderror" name="membership_type" required>
+                                <option value="trial" {{ old('membership_type', $user->membership_type) === 'trial' ? 'selected' : '' }}>Prueba</option>
+                                <option value="free" {{ old('membership_type', $user->membership_type) === 'free' ? 'selected' : '' }}>Gratis</option>
+                                <option value="premium" {{ old('membership_type', $user->membership_type) === 'premium' ? 'selected' : '' }}>Premium</option>
+                            </select>
+                            @error('membership_type')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="max_open_cases" class="form-label">Límite de Casos Activos</label>
+                            <input id="max_open_cases" type="number" min="1" class="form-control @error('max_open_cases') is-invalid @enderror" name="max_open_cases" value="{{ old('max_open_cases', $user->max_open_cases) }}" required>
+                            @error('max_open_cases')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Estado</label>
+                            <select id="status" class="form-control @error('status') is-invalid @enderror" name="status" required>
+                                <option value="active" {{ old('status', $user->status) === 'active' ? 'selected' : '' }}>Activo</option>
+                                <option value="inactive" {{ old('status', $user->status) === 'inactive' ? 'selected' : '' }}>Inactivo</option>
+                            </select>
+                            @error('status')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
                                 </span>
@@ -92,7 +129,7 @@
                         </div>
 
                         <div class="d-flex justify-content-end">
-                            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary me-2">
+                            <a href="{{ route('users.index') }}" class="btn btn-secondary me-2">
                                 <i class="material-icons">arrow_back</i> Volver
                             </a>
                             <button type="submit" class="btn btn-primary">

@@ -23,7 +23,7 @@
                     <div class="d-flex justify-content-between mb-3">
                         <h4>Lista de Usuarios</h4>
                         @can('users.create')
-                            <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+                            <a href="{{ route('users.create') }}" class="btn btn-primary">
                                 <i class="material-icons">add</i> Nuevo Usuario
                             </a>
                         @endcan
@@ -73,31 +73,35 @@
                                         </td>
                                         <td>
                                             <div class="btn-group">
-                                                @can('users.edit')
-                                                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-primary">
+                                                @if($user->status === 'active')
+                                                    <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-primary" title="Editar">
                                                         <i class="material-icons">edit</i>
                                                     </a>
-                                                @endcan
-                                                
-                                                @can('users.inactivate')
-                                                    <form action="{{ route('admin.users.inactivate', $user) }}" method="POST" class="d-inline">
+                                                    
+                                                    <form action="{{ route('users.inactivate', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de inactivar este usuario?')">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('¿Estás seguro de inactivar este usuario?')">
+                                                        <button type="submit" class="btn btn-sm btn-warning" title="Inactivar">
                                                             <i class="material-icons">lock</i>
                                                         </button>
                                                     </form>
-                                                @endcan
-                                                
-                                                @can('users.delete')
-                                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline">
+                                                @else
+                                                    <form action="{{ route('users.activate', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de activar este usuario?')">
                                                         @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar este usuario?')">
-                                                            <i class="material-icons">delete</i>
+                                                        @method('POST')
+                                                        <button type="submit" class="btn btn-sm btn-success" title="Activar">
+                                                            <i class="material-icons">lock_open</i>
                                                         </button>
                                                     </form>
-                                                @endcan
+                                                @endif
+                                                
+                                                <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                                        <i class="material-icons">delete</i>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
