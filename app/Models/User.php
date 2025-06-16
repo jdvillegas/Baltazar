@@ -11,6 +11,14 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
+    
+    /**
+     * Get the cases associated with the user.
+     */
+    public function cases()
+    {
+        return $this->hasMany(\App\Models\CaseModel::class, 'user_id');
+    }
 
     /**
      * The attributes that are mass assignable.

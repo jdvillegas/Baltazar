@@ -13,6 +13,7 @@ Route::post('/register', [RegisteredUserController::class, 'store']);
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', ['App\Http\Controllers\DashboardController', 'index'])->name('dashboard');
+    Route::get('/dashboard', ['App\Http\Controllers\DashboardController', 'index'])->name('dashboard.redirect');
 
     // Rutas de administración (requieren rol de admin)
     Route::prefix('admin')->middleware(['auth', \Spatie\Permission\Middleware\RoleMiddleware::class . ':admin'])->group(function () {
