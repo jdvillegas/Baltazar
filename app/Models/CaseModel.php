@@ -12,12 +12,24 @@ class CaseModel extends Model
         'description',
         'status',
         'user_id',
-        'anulled_at'
+        'anulled_at',
+        'departamento',
+        'despacho',
+        'es_privado',
+        'fecha_proceso',
+        'fecha_ultima_actuacion',
+        'id_conexion',
+        'id_proceso',
+        'llave_proceso',
+        'sujetos_procesales'
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'fecha_proceso' => 'datetime',
+        'fecha_ultima_actuacion' => 'datetime',
+        'es_privado' => 'boolean',
     ];
 
     public function user()
