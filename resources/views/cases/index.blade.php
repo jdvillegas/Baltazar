@@ -21,22 +21,27 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Casos</h2>
-        @php
-            $user = auth()->user();
-            $openCases = \App\Models\CaseModel::where('status', 'pendiente')
-                ->orWhere('status', 'en_proceso')
-                ->orWhere('status', 'anulado')
-                ->count();
-        @endphp
-        @if($openCases < $user->max_open_cases)
-            <a href="{{ route('cases.create') }}" class="btn btn-primary">
-                <i class="material-icons">add</i> Nuevo Caso
+        <div class="d-flex gap-2">
+            <a href="{{ route('cases.buscar') }}" class="btn btn-success">
+                <i class="material-icons">search</i> Buscar Proceso
             </a>
-        @else
-            <div class="btn btn-secondary disabled">
-                <i class="material-icons">add</i> Límite alcanzado
-            </div>
-        @endif
+            @php
+                $user = auth()->user();
+                $openCases = \App\Models\CaseModel::where('status', 'pendiente')
+                    ->orWhere('status', 'en_proceso')
+                    ->orWhere('status', 'anulado')
+                    ->count();
+            @endphp
+            @if($openCases < $user->max_open_cases)
+                <a href="{{ route('cases.create') }}" class="btn btn-primary">
+                    <i class="material-icons">add</i> Nuevo Caso
+                </a>
+            @else
+                <div class="btn btn-secondary disabled">
+                    <i class="material-icons">add</i> Límite alcanzado
+                </div>
+            @endif
+        </div>
     </div>
 
     <div class="card">

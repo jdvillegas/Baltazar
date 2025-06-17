@@ -10,11 +10,6 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name
 Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
 Route::post('/register', [RegisteredUserController::class, 'store']);
 
-// Ruta de prueba temporal
-Route::get('/test-route', function() {
-    return '¡La ruta de prueba funciona correctamente!';
-});
-
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', ['App\Http\Controllers\DashboardController', 'index'])->name('dashboard');
@@ -47,17 +42,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', ['App\Http\Controllers\CasesController', 'index'])->name('cases.index');
         Route::get('/create', ['App\Http\Controllers\CasesController', 'create'])->name('cases.create');
         Route::post('/', ['App\Http\Controllers\CasesController', 'store'])->name('cases.store');
-        
-        // Rutas para búsqueda de procesos (deben ir antes de las rutas con parámetros)
-        Route::get('/buscar', ['App\Http\Controllers\CasesController', 'buscar'])->name('cases.buscar');
-        Route::post('/buscar/proceso', ['App\Http\Controllers\CasesController', 'buscarProceso'])->name('cases.buscar.proceso');
-        Route::post('/guardar-proceso', ['App\Http\Controllers\CasesController', 'guardarProceso'])->name('cases.guardar-proceso');
-        
-        // Rutas con parámetros (deben ir al final)
         Route::get('/{case}', ['App\Http\Controllers\CasesController', 'show'])->name('cases.show');
         Route::get('/{case}/edit', ['App\Http\Controllers\CasesController', 'edit'])->name('cases.edit');
         Route::put('/{case}', ['App\Http\Controllers\CasesController', 'update'])->name('cases.update');
         Route::delete('/{case}', ['App\Http\Controllers\CasesController', 'destroy'])->name('cases.destroy');
+        
+        // Rutas para búsqueda de procesos
+        Route::get('/buscar', ['App\Http\Controllers\CasesController', 'buscar'])->name('cases.buscar');
+        Route::post('/buscar/proceso', ['App\Http\Controllers\CasesController', 'buscarProceso'])->name('cases.buscar.proceso');
     });
 
     // Configuración
