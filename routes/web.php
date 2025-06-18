@@ -51,7 +51,7 @@ Route::middleware(['auth'])->group(function () {
         // Rutas para búsqueda de procesos (deben ir antes de las rutas con parámetros)
         Route::get('/buscar', ['App\Http\Controllers\CasesController', 'buscar'])->name('cases.buscar');
         Route::post('/buscar/proceso', ['App\Http\Controllers\CasesController', 'buscarProceso'])->name('cases.buscar.proceso');
-        Route::post('/guardar-proceso', ['App\Http\Controllers\CasesController', 'guardarProceso'])->name('cases.guardar-proceso');
+        Route::post('/guardar-proceso', ['App\Http\Controllers\CasesController', 'guardarProceso'])->name('cases.guardar_proceso');
         
         // Rutas con parámetros (deben ir al final)
         Route::get('/{case}', ['App\Http\Controllers\CasesController', 'show'])->name('cases.show');

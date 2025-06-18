@@ -111,7 +111,7 @@ class CasesController extends Controller
             return redirect()->back()->with('error', 'Error al anular el caso: ' . $e->getMessage());
         }
     }
-    
+
     /**
      * Muestra el formulario de búsqueda de procesos
      *
@@ -136,21 +136,21 @@ class CasesController extends Controller
 
         try {
             $numeroRadicacion = $request->input('numero_radicacion');
-            
+
             // Consultar el proceso
             $resultado = $this->procesoService->consultarProceso($numeroRadicacion);
-            
+
             if (!$resultado['success']) {
                 return response()->json([
                     'success' => false,
                     'message' => $resultado['error'] ?? 'Error al consultar el proceso.'
                 ], 400);
             }
-            
+
             // Log para depuración
             \Log::debug('Respuesta completa de la API:', $resultado);
             \Log::debug('Datos de la respuesta:', ['data' => $resultado['data'] ?? null]);
-            
+
             // Verificar si hay datos de procesos en la respuesta
             if (empty($resultado['data']) || !isset($resultado['data']['procesos']) || empty($resultado['data']['procesos'])) {
                 \Log::debug('No se encontraron procesos en la respuesta');
@@ -159,13 +159,13 @@ class CasesController extends Controller
                     'message' => 'No se encontraron procesos con el número de radicación proporcionado.'
                 ], 404);
             }
-            
+
             // Obtener el primer proceso
             $procesoData = $resultado['data']['procesos'][0];
-            
+
             // Log para depuración
             \Log::debug('Datos del proceso:', $procesoData);
-            
+
             // Verificar si hay sujetos procesales
             $sujetosProcesales = $procesoData['sujetosProcesales'] ?? [];
             if (empty($sujetosProcesales)) {
@@ -173,7 +173,7 @@ class CasesController extends Controller
                 $sujetosProcesales = $procesoData['partes'] ?? $procesoData['sujetos'] ?? [];
                 \Log::debug('Sujetos procesales alternativos:', $sujetosProcesales);
             }
-            
+
             // Formatear los datos del proceso para la respuesta
             $procesoFormateado = [
                 'id' => $procesoData['idProceso'] ?? $procesoData['id'] ?? null,
@@ -185,20 +185,20 @@ class CasesController extends Controller
                 'fecha_proceso' => $procesoData['fechaProceso'] ?? $procesoData['fechaInicio'] ?? null,
                 'sujetos_procesales' => $sujetosProcesales
             ];
-            
+
             \Log::debug('Proceso formateado:', $procesoFormateado);
-            
+
             // Guardar el proceso en la base de datos
             $procesos = $this->procesoService->procesarYGuardarRespuesta(
                 $resultado['data'],
                 auth()->id()
             );
-            
+
             // Si hubo un error al guardar, devolver el error
             if (!$procesos['success']) {
                 return response()->json($procesos);
             }
-            
+
             // Devolver los datos formateados del proceso junto con la respuesta completa para depuración
             return response()->json([
                 'success' => true,
@@ -210,10 +210,10 @@ class CasesController extends Controller
                     'sujetos_procesales' => $sujetosProcesales
                 ]
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('Error en buscarProceso: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al procesar la solicitud',
@@ -230,17 +230,30 @@ class CasesController extends Controller
      */
     public function guardarProceso(Request $request)
     {
-        $request->validate([
-            'proceso_id' => 'required|string',
-            'llave_proceso' => 'nullable|string|max:255',
-            'numero_radicacion' => 'required|string',
-            'tipo_proceso' => 'nullable|string',
-            'departamento' => 'nullable|string',
-            'ciudad' => 'nullable|string',
-            'despacho' => 'nullable|string',
-            'fecha_proceso' => 'nullable|date',
-            'sujetos_procesales' => 'nullable|array',
-        ]);
+        \Log::info('Iniciando guardarProceso', $request->all());
+        
+        try {
+            $validated = $request->validate([
+                'proceso_id' => 'required|string',
+                'llave_proceso' => 'nullable|string|max:255',
+                'numero_radicacion' => 'required|string',
+                'tipo_proceso' => 'nullable|string',
+                'departamento' => 'nullable|string',
+                'ciudad' => 'nullable|string',
+                'despacho' => 'nullable|string',
+                'fecha_proceso' => 'nullable|date',
+                'sujetos_procesales' => 'nullable|array',
+            ]);
+            
+            \Log::info('Datos validados', $validated);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Error de validación:', $e->errors());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
         try {
             // Verificar si ya existe un caso con este proceso
@@ -280,7 +293,7 @@ class CasesController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error al guardar el caso: ' . $e->getMessage());
             \Log::error($e->getTraceAsString());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al guardar el caso: ' . $e->getMessage()
@@ -301,7 +314,7 @@ class CasesController extends Controller
         }
 
         $demandante = collect($sujetosProcesales)->first(function ($sujeto) {
-            return isset($sujeto['tipoSujeto']) && 
+            return isset($sujeto['tipoSujeto']) &&
                    in_array(strtolower($sujeto['tipoSujeto']), ['demandante', 'actor', 'demandante acumulado']);
         });
 
@@ -321,7 +334,7 @@ class CasesController extends Controller
         }
 
         $demandado = collect($sujetosProcesales)->first(function ($sujeto) {
-            return isset($sujeto['tipoSujeto']) && 
+            return isset($sujeto['tipoSujeto']) &&
                    in_array(strtolower($sujeto['tipoSujeto']), ['demandado', 'demandado principal', 'demandado acumulado']);
         });
 
