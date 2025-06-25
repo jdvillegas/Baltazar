@@ -78,8 +78,8 @@
                                     <td>
                                         @if($case->status !== 'anulado')
                                             <div class="btn-group">
-                                                <a href="{{ route('cases.edit', $case) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Editar">
-                                                    <i class="material-icons">edit</i>
+                                                <a href="{{ route('cases.show', $case) }}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Ver Detalles">
+                                                    <i class="material-icons">visibility</i>
                                                 </a>
                                                 <form action="{{ route('cases.destroy', $case) }}" method="POST" class="d-inline">
                                                     @csrf
@@ -90,18 +90,15 @@
                                                 </form>
                                             </div>
                                         @else
-                                            <div class="text-muted small">
-                                                Acciones no disponibles
-                                            </div>
-                                            <div class="text-muted small">
-                                                Anulado el {{ $case->anulled_at ? \Carbon\Carbon::parse($case->anulled_at)->format('Y-m-d H:i') : 'Fecha no disponible' }}
-                                            </div>
-                                            <div class="text-muted small">
-                                                <i class="material-icons">delete</i> Anulado
+                                            <div class="d-flex flex-column">
+                                                <div class="text-muted small mb-1">
+                                                    Acciones no disponibles
+                                                </div>
+                                                <div class="text-muted small">
+                                                    <i class="material-icons">delete</i> Anulado el {{ $case->anulled_at ? \Carbon\Carbon::parse($case->anulled_at)->format('Y-m-d H:i') : 'Fecha no disponible' }}
+                                                </div>
                                             </div>
                                         @endif
-                                            </form>
-                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
