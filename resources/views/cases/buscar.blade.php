@@ -137,26 +137,47 @@ jQuery(document).ready(function($) {
     // Variables globales
     let procesoActual = null;
 
-    // Función para mostrar mensajes
+    // Función para mostrar mensajes con SweetAlert2
     function mostrarMensaje(mensaje, tipo = 'info') {
         console.log('Mostrando mensaje:', mensaje);
-        // Limpiar mensajes anteriores
-        $('.alert-dismissible').alert('close');
-
-        const alerta = `
-            <div class="alert alert-${tipo} alert-dismissible fade show mt-3">
-                <i class="fas ${tipo === 'danger' ? 'fa-exclamation-circle' : 'fa-info-circle'} me-2"></i>
-                ${mensaje}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>`;
-
-        // Insertar al principio del contenedor principal
-        $('.container').prepend(alerta);
-
-        // Auto-ocultar después de 5 segundos
-        setTimeout(() => {
-            $('.alert').alert('close');
-        }, 5000);
+        
+        // Mapear tipos de Bootstrap a íconos de SweetAlert2
+        const iconos = {
+            'success': 'success',
+            'error': 'error',
+            'warning': 'warning',
+            'info': 'info',
+            'question': 'question'
+        };
+        
+        // Determinar el ícono basado en el tipo
+        const icono = iconos[tipo] || 'info';
+        
+        // Configuración común para todos los mensajes
+        const configuracion = {
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        };
+        
+        // Mostrar el mensaje con SweetAlert2
+        const Toast = Swal.mixin(configuracion);
+        
+        Toast.fire({
+            icon: icono,
+            title: mensaje,
+            background: '#fff',
+            color: '#333',
+            iconColor: tipo === 'danger' ? '#dc3545' : 
+                       tipo === 'success' ? '#198754' : 
+                       tipo === 'warning' ? '#ffc107' : '#0dcaf0'
+        });
     }
 
 
@@ -314,19 +335,44 @@ jQuery(document).ready(function($) {
         }).join('<br>');
     }
 
-    // Función para guardar el proceso
-    function guardarProceso() {
+    // Función para mostrar un diálogo de confirmación antes de guardar
+    function confirmarGuardarProceso() {
         if (!procesoActual) {
             mostrarMensaje('No hay un proceso para guardar', 'warning');
             return;
         }
 
+        Swal.fire({
+            title: '¿Guardar este caso?',
+            text: '¿Estás seguro de que deseas guardar este caso para su seguimiento?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                guardarProceso();
+            }
+        });
+    }
+
+    // Función para guardar el proceso
+    function guardarProceso() {
         const $btnGuardar = $('.btn-guardar-proceso');
         const btnOriginal = $btnGuardar.html();
 
-        // Deshabilitar botón y mostrar spinner
-        $btnGuardar.prop('disabled', true)
-                  .html('<span class="spinner-border spinner-border-sm"></span> Guardando...');
+        // Mostrar loading
+        Swal.fire({
+            title: 'Guardando caso',
+            html: 'Por favor espera mientras procesamos tu solicitud...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         // Realizar petición AJAX para guardar
         $.ajax({
@@ -347,40 +393,70 @@ jQuery(document).ready(function($) {
             dataType: 'json',
             success: function(response) {
                 console.log('Proceso guardado:', response);
+                
                 if (response.success) {
-                    mostrarMensaje('Proceso guardado correctamente', 'success');
-                    // Redirigir al detalle del caso después de guardar
-                    if (response.case_id) {
-                        setTimeout(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'El caso se ha guardado correctamente',
+                        showConfirmButton: true,
+                        timer: 2000,
+                        timerProgressBar: true
+                    }).then(() => {
+                        // Redirigir al detalle del caso después de guardar
+                        if (response.case_id) {
                             window.location.href = '/cases/' + response.case_id;
-                        }, 1500);
-                    }
+                        }
+                    });
                 } else {
-                    mostrarMensaje(response.message || 'Error al guardar el proceso', 'danger');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'Ocurrió un error al guardar el caso',
+                        confirmButtonText: 'Entendido'
+                    });
                 }
             },
             error: function(xhr, status, error) {
                 console.error('Error al guardar el proceso:', error);
-                let errorMessage = 'Error al guardar el proceso';
+                let errorMessage = 'Ocurrió un error al intentar guardar el caso. Por favor, inténtalo de nuevo.';
+                let errorDetails = '';
 
                 try {
                     const response = xhr.responseJSON;
                     if (response && response.message) {
                         errorMessage = response.message;
-                    } else if (xhr.status === 422 && response.errors) {
-                        // Mostrar el primer error de validación
-                        const firstError = Object.values(response.errors)[0][0];
-                        if (firstError) {
-                            errorMessage = firstError;
-                        }
+                    }
+                    
+                    // Si hay errores de validación, mostrarlos todos
+                    if (xhr.status === 422 && response.errors) {
+                        errorDetails = '<ul class="text-start">';
+                        Object.entries(response.errors).forEach(([field, errors]) => {
+                            if (Array.isArray(errors)) {
+                                errors.forEach(err => {
+                                    errorDetails += `<li>${field}: ${err}</li>`;
+                                });
+                            } else if (typeof errors === 'string') {
+                                errorDetails += `<li>${field}: ${errors}</li>`;
+                            }
+                        });
+                        errorDetails += '</ul>';
                     }
                 } catch (e) {
                     console.error('Error al procesar la respuesta de error:', e);
                 }
 
-                mostrarMensaje(errorMessage, 'danger');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    html: `${errorMessage}${errorDetails ? '<div class="mt-3 text-start">' + errorDetails + '</div>' : ''}`,
+                    confirmButtonText: 'Entendido',
+                    width: '600px'
+                });
             },
             complete: function() {
+                // Cerrar cualquier diálogo de SweetAlert2 abierto
+                Swal.close();
                 // Restaurar botón
                 $btnGuardar.prop('disabled', false).html(btnOriginal);
             }
@@ -393,7 +469,7 @@ jQuery(document).ready(function($) {
         .on('click', '#btnBuscar', buscarProceso)
         .on('click', '.btn-guardar-proceso', function(e) {
             e.preventDefault();
-            guardarProceso();
+            confirmarGuardarProceso();
         })
         .on('click', '#btnNuevaBusqueda', function() {
             $('#resultado').hide();
