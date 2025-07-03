@@ -49,6 +49,9 @@ Route::middleware(['auth'])->group(function () {
     // Casos
     Route::prefix('cases')->group(function () {
         Route::get('/', ['App\Http\Controllers\CasesController', 'index'])->name('cases.index');
+        Route::post('/{case}/actualizar-actuaciones', ['App\Http\Controllers\CasesController', 'actualizarActuaciones'])->name('cases.actualizar-actuaciones');
+        Route::post('/{case}/sync-actuaciones', ['App\Http\Controllers\CasesController', 'syncActuaciones'])
+            ->name('cases.sync-actuaciones');
         Route::get('/create', ['App\Http\Controllers\CasesController', 'create'])->name('cases.create');
         Route::post('/', ['App\Http\Controllers\CasesController', 'store'])->name('cases.store');
         

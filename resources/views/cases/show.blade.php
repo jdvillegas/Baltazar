@@ -25,6 +25,36 @@
         font-size: 0.9rem;
         padding: 0.4em 0.8em;
     }
+    
+    /* Estilos para la sección de actuaciones */
+    .actuacion-card {
+        border-left: 3px solid #0d6efd;
+        transition: all 0.2s ease;
+    }
+    
+    .actuacion-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .actuacion-date {
+        min-width: 100px;
+    }
+    
+    .actuacion-actions {
+        min-width: 100px;
+        text-align: center;
+    }
+    
+    .actuacion-description {
+        max-width: 300px;
+    }
+    
+    @media (max-width: 768px) {
+        .actuacion-description {
+            max-width: 200px;
+        }
+    }
 </style>
 @endpush
 
@@ -57,9 +87,17 @@
                         <i class="fas fa-folder-open text-primary me-2"></i>
                         {{ $case->title ?? 'Caso sin título' }}
                     </h4>
-                    <a href="{{ route('cases.edit', $case) }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-edit me-1"></i> Editar Estado
-                    </a>
+                    <div class="d-flex gap-2">
+                        @if($case->llave_proceso)
+                        <button id="btn-actualizar-actuaciones" class="btn btn-outline-primary btn-sm" 
+                                data-case-id="{{ $case->id }}">
+                            <i class="fas fa-sync-alt me-1"></i> Actualizar Actuaciones
+                        </button>
+                        @endif
+                        <a href="{{ route('cases.edit', $case) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit me-1"></i> Editar Estado
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -228,6 +266,115 @@
                         </div>
                     </div>
                     @endif
+
+                    <!-- Sección de Actuaciones -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card detail-card">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-clipboard-list text-primary me-2"></i>
+                                            Historial de Actuaciones
+                                        </h5>
+                                        <span class="badge bg-primary">{{ $case->actuaciones->count() }} registros</span>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    @if($case->actuaciones->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Fecha</th>
+                                                        <th>Actuación</th>
+                                                        <th>Descripción</th>
+                                                        <th>Estado</th>
+                                                        <th class="text-center">Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($case->actuaciones as $actuacion)
+                                                        <tr>
+                                                            <td class="align-middle">
+                                                                <div class="d-flex flex-column">
+                                                                    <span class="fw-medium">{{ $actuacion->fecha_actuacion ? $actuacion->fecha_actuacion->format('d/m/Y') : 'N/A' }}</span>
+                                                                    <small class="text-muted">{{ $actuacion->fecha_actuacion ? $actuacion->fecha_actuacion->format('h:i A') : '' }}</small>
+                                                                </div>
+                                                            </td>
+                                                            <td class="align-middle">
+                                                                <div class="fw-medium">{{ $actuacion->actuacion ?? 'N/A' }}</div>
+                                                                @if($actuacion->tipo_actuacion)
+                                                                    <small class="text-muted">{{ $actuacion->tipo_actuacion }}</small>
+                                                                @endif
+                                                            </td>
+                                                            <td class="align-middle">
+                                                                @if($actuacion->anotacion)
+                                                                    <div class="text-truncate" style="max-width: 250px;" 
+                                                                         data-bs-toggle="tooltip" 
+                                                                         title="{{ $actuacion->anotacion }}">
+                                                                        {{ $actuacion->anotacion }}
+                                                                    </div>
+                                                                @else
+                                                                    <span class="text-muted">Sin descripción</span>
+                                                                @endif
+                                                            </td>
+                                                            <td class="align-middle">
+                                                                @php
+                                                                    $badgeClass = [
+                                                                        'Activo' => 'bg-success',
+                                                                        'Inactivo' => 'bg-secondary',
+                                                                        'Finalizado' => 'bg-info',
+                                                                        'Suspendido' => 'bg-warning',
+                                                                    ][$actuacion->estado] ?? 'bg-secondary';
+                                                                @endphp
+                                                                <span class="badge {{ $badgeClass }}">
+                                                                    {{ $actuacion->estado ?? 'N/A' }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                @if($actuacion->url_archivo)
+                                                                    <a href="{{ $actuacion->url_archivo }}" 
+                                                                       target="_blank" 
+                                                                       class="btn btn-sm btn-outline-primary"
+                                                                       data-bs-toggle="tooltip"
+                                                                       title="Ver documento">
+                                                                        <i class="fas fa-file-pdf"></i>
+                                                                    </a>
+                                                                @else
+                                                                    <span class="text-muted">Sin archivo</span>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <div class="text-center p-4">
+                                            <div class="mb-3">
+                                                <i class="fas fa-clipboard-list fa-3x text-muted"></i>
+                                            </div>
+                                            <h5 class="text-muted">No hay actuaciones registradas</h5>
+                                            <p class="text-muted mb-0">Las actuaciones se sincronizarán automáticamente cada 6 horas</p>
+                                        </div>
+                                    @endif
+                                </div>
+                                @if($case->actuaciones->count() > 0)
+                                    <div class="card-footer bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                Última actualización: {{ now()->format('d/m/Y h:i A') }}
+                                            </small>
+                                            <button id="btn-actualizar-actuaciones" class="btn btn-sm btn-outline-primary" onclick="actualizarActuaciones(); return false;">
+                                                <i class="fas fa-sync-alt me-1"></i> Actualizar
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-footer bg-white">
                     <div class="d-flex justify-content-between">
@@ -245,4 +392,116 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    // Inicializar tooltips de Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Manejar clic en el botón de actualizar actuaciones
+        const btnActualizar = document.getElementById('btn-actualizar-actuaciones');
+        if (btnActualizar) {
+            btnActualizar.addEventListener('click', function() {
+                const icono = btnActualizar.querySelector('i');
+                const textoOriginal = btnActualizar.innerHTML;
+                const caseId = btnActualizar.dataset.caseId;
+                
+                // Mostrar ícono de carga
+                btnActualizar.disabled = true;
+                btnActualizar.classList.add('disabled');
+                icono.className = 'fas fa-spinner fa-spin me-1';
+                
+                // Hacer la petición al servidor
+                fetch(`/cases/${caseId}/actualizar-actuaciones`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Error en la respuesta del servidor');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Mostrar mensaje de éxito con estadísticas
+                        let mensaje = data.message;
+                        if (data.stats && data.stats.nuevas > 0) {
+                            mensaje += `\n${data.stats.nuevas} nuevas actuaciones encontradas.`;
+                        } else {
+                            mensaje += '\nNo hay nuevas actuaciones.';
+                        }
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Actualización completada!',
+                            text: mensaje,
+                            timer: 3000,
+                            showConfirmButton: true
+                        });
+                        
+                        // Recargar la página después de 1.5 segundos
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        throw new Error(data.message || 'Error al actualizar las actuaciones');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Ocurrió un error al actualizar las actuaciones. Por favor, inténtalo de nuevo más tarde.',
+                        showConfirmButton: true
+                    });
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    btnActualizar.disabled = false;
+                    btnActualizar.classList.remove('disabled');
+                    btnActualizar.innerHTML = textoOriginal;
+                    const icon = btnActualizar.querySelector('i');
+                    if (icon) icon.className = 'fas fa-sync-alt me-1';
+                });
+            });
+        }
+    });
+</script>
+@endpush
+
+@push('styles')
+<style>
+    /* Estilos para el botón de actualizar */
+    .btn-update-actuaciones {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-update-actuaciones .spinner-border {
+        display: none;
+        margin-right: 0.5rem;
+    }
+    
+    .btn-update-actuaciones.loading .spinner-border {
+        display: inline-block;
+    }
+    
+    .btn-update-actuaciones.loading span {
+        visibility: hidden;
+    }
+</style>
+@endpush
+
 @endsection

@@ -12,10 +12,13 @@ class CasesController extends Controller
 {
     protected $procesoService;
 
-    public function __construct(ProcesoService $procesoService)
+    protected $actuacionService;
+
+    public function __construct(ProcesoService $procesoService, \App\Services\ActuacionService $actuacionService)
     {
         $this->middleware('auth');
         $this->procesoService = $procesoService;
+        $this->actuacionService = $actuacionService;
     }
 
     public function index()
@@ -69,6 +72,12 @@ class CasesController extends Controller
         if ($case->user_id !== auth()->id()) {
             abort(403, 'No tienes permisos para ver este caso');
         }
+        
+        // Cargar las actuaciones ordenadas por fecha de actualización (más recientes primero)
+        $case->load(['actuaciones' => function($query) {
+            $query->orderBy('fecha_actuacion', 'desc');
+        }]);
+        
         return view('cases.show', compact('case'));
     }
 
@@ -340,5 +349,95 @@ class CasesController extends Controller
 
         return $demandado['nombre'] ?? null;
     }
-
+    
+    /**
+     * Sincroniza las actuaciones de un caso desde el servicio externo.
+     *
+     * @param  \App\Models\CaseModel  $case
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function syncActuaciones(CaseModel $case)
+    {
+        // Verificar que el caso pertenece al usuario actual
+        if ($case->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para actualizar este caso'
+            ], 403);
+        }
+        
+        try {
+            $actuacionService = app(\App\Services\Contracts\ActuacionServiceInterface::class);
+            
+            // Consultar las actuaciones del servicio externo
+            $actuaciones = $actuacionService->consultarActuaciones($case);
+            
+            // Sincronizar las actuaciones en la base de datos
+            $actuacionService->sincronizarActuaciones($case, $actuaciones);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Actuaciones sincronizadas correctamente',
+                'count' => count($actuaciones)
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error al sincronizar actuaciones', [
+                'case_id' => $case->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al sincronizar las actuaciones: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Actualiza las actuaciones de un caso desde la API
+     * 
+     * @param CaseModel $case
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function actualizarActuaciones(CaseModel $case)
+    {
+        // Verificar que el caso pertenece al usuario actual
+        if ($case->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para actualizar este caso'
+            ], 403);
+        }
+        
+        try {
+            $resultado = $this->actuacionService->actualizarActuacionesDelCaso($case);
+            
+            if ($resultado['exito']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $resultado['mensaje'],
+                    'stats' => [
+                        'nuevas' => $resultado['nuevas_actuaciones'],
+                        'total' => $resultado['total_actuaciones'],
+                        'tiempo' => $resultado['tiempo_ejecucion']
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => $resultado['mensaje']
+                ], 500);
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Error al actualizar actuaciones: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar las actuaciones: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

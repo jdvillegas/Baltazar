@@ -37,6 +37,14 @@ class CaseModel extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Obtener las actuaciones del caso.
+     */
+    public function actuaciones()
+    {
+        return $this->hasMany(Actuacion::class, 'case_model_id');
+    }
+
     public static function getActiveCount($userId)
     {
         return self::where('user_id', $userId)

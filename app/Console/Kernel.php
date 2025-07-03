@@ -14,6 +14,13 @@ class Kernel extends ConsoleKernel
     {
         // Ejecutar el job de limpieza de casos anulados cada día a las 3:00 AM
         $schedule->job(new \App\Jobs\CleanAnulledCases())->dailyAt('3:00');
+        
+        // Sincronizar actuaciones cada 6 horas
+        $schedule->command('actuaciones:schedule-sync')
+                 ->everySixHours()
+                 ->withoutOverlapping()
+                 ->runInBackground()
+                 ->appendOutputTo(storage_path('logs/actuaciones-sync.log'));
     }
 
     /**
